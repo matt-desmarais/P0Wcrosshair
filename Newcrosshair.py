@@ -21,18 +21,17 @@ import smbus
 from BerryImu import BerryImu
 from squid import *
 
+zoom_step = 0.03
 
-globals = {
-    'zoom_step'     : 0.03,
+zoom_xy_min = 0.0
+zoom_xy = 0.0
+zoom_xy_max = 0.4
 
-    'zoom_xy_min'   : 0.0,
-    'zoom_xy'       : 0.0,
-    'zoom_xy_max'   : 0.4,
+zoom_wh_min = 1.0
+zoom_wh = 1.0
+zoom_wh_max = 0.2
 
-    'zoom_wh_min'   : 1.0,
-    'zoom_wh'       : 1.0,
-    'zoom_wh_max'   : 0.2
-}
+
 
 def update_zoom():
     #print "Setting camera to (%s, %s, %s, %s)" % (globals['zoom_xy'], globals['zoom_xy'], globals['zoom_wh'], globals['zoom_wh'])
@@ -643,9 +642,9 @@ with picamera.PiCamera() as camera:
     camera.resolution = (width, height)
     camera.framerate = 24
     filename = get_file_name()
-    camera.exposure = 'off'
+#    camera.exposure = 'off'
     camera.iso = 800
-    camera.awb = 'off'
+#    camera.awb = 'off'
     camera.meter_mode='matrix'
 #    camera.brightness = 70
 #    camera.contrast = 50
@@ -674,7 +673,7 @@ with picamera.PiCamera() as camera:
 				zoom_out()
                         print counter
                 clkLastState = clkState
-                sleep(0.01)
+                time.sleep(0.01)
                 
         gyr_meas = imu.read_gyr_data()
         time.sleep(0.25)
