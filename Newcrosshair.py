@@ -23,14 +23,14 @@ from squid import *
 
 zooms = {
 
-    'zoom_step' : 0.03
+    'zoom_step' : 0.03,
 
-    'zoom_xy_min' : 0.0
-    'zoom_xy' : 0.0
-    'zoom_xy_max' : 0.4
+    'zoom_xy_min' : 0.0,
+    'zoom_xy' : 0.0,
+    'zoom_xy_max' : 0.4,
 
-    'zoom_wh_min' : 1.0
-    'zoom_wh' : 1.0
+    'zoom_wh_min' : 1.0,
+    'zoom_wh' : 1.0,
     'zoom_wh_max' : 0.2
 
 }
