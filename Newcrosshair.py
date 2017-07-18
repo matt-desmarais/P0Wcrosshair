@@ -21,45 +21,47 @@ import smbus
 from BerryImu import BerryImu
 from squid import *
 
-zoom_step = 0.03
+zooms = {
 
-zoom_xy_min = 0.0
-zoom_xy = 0.0
-zoom_xy_max = 0.4
+    'zoom_step' : 0.03
 
-zoom_wh_min = 1.0
-zoom_wh = 1.0
-zoom_wh_max = 0.2
+    'zoom_xy_min' : 0.0
+    'zoom_xy' : 0.0
+    'zoom_xy_max' : 0.4
 
+    'zoom_wh_min' : 1.0
+    'zoom_wh' : 1.0
+    'zoom_wh_max' : 0.2
 
+}
 
 def update_zoom():
-    #print "Setting camera to (%s, %s, %s, %s)" % (globals['zoom_xy'], globals['zoom_xy'], globals['zoom_wh'], globals['zoom_wh'])
-    camera.zoom = (globals['zoom_xy'], globals['zoom_xy'], globals['zoom_wh'], globals['zoom_wh'])
+    #print "Setting camera to (%s, %s, %s, %s)" % (zooms['zoom_xy'], zooms['zoom_xy'], zooms['zoom_wh'], zooms['zoom_wh'])
+    camera.zoom = (zooms['zoom_xy'], zooms['zoom_xy'], zooms['zoom_wh'], zooms['zoom_wh'])
     print "Camera at (x, y, w, h) = ", camera.zoom
 
 def set_min_zoom():
-    globals['zoom_xy'] = globals['zoom_xy_min']
-    globals['zoom_wh'] = globals['zoom_wh_min']
+    zooms['zoom_xy'] = zooms['zoom_xy_min']
+    zooms['zoom_wh'] = zooms['zoom_wh_min']
 
 def set_max_zoom():
-    globals['zoom_xy'] = globals['zoom_xy_max']
-    globals['zoom_wh'] = globals['zoom_wh_max']
+    zooms['zoom_xy'] = zooms['zoom_xy_max']
+    zooms['zoom_wh'] = zooms['zoom_wh_max']
 
 def zoom_out():
-    if globals['zoom_xy'] - globals['zoom_step'] < globals['zoom_xy_min']:
+    if zooms['zoom_xy'] - zooms['zoom_step'] < zooms['zoom_xy_min']:
         set_min_zoom()
     else:
-        globals['zoom_xy'] -= globals['zoom_step']
-        globals['zoom_wh'] += (globals['zoom_step'] * 2)
+        zooms['zoom_xy'] -= zooms['zoom_step']
+        zooms['zoom_wh'] += (zooms['zoom_step'] * 2)
     update_zoom()
 
 def zoom_in():
-    if globals['zoom_xy'] + globals['zoom_step'] > globals['zoom_xy_max']:
+    if zooms['zoom_xy'] + zooms['zoom_step'] > zooms['zoom_xy_max']:
         set_max_zoom()
     else:
-        globals['zoom_xy'] += globals['zoom_step']
-        globals['zoom_wh'] -= (globals['zoom_step'] * 2)
+        zooms['zoom_xy'] += zooms['zoom_step']
+        zooms['zoom_wh'] -= (zooms['zoom_step'] * 2)
     update_zoom()
 
 def get_file_name():  # new
