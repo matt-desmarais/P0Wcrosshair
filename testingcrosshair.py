@@ -739,23 +739,6 @@ def patternswitcher(target,guitoggle):
     o = camera.add_overlay(np.getbuffer(target), layer=3, alpha=160)
     return
 
-def imuCode():
-    while True:
-	    print("NF~!!!")
-	    rgb = Squid(16, 20, 21)
-	    gyr_meas = imu.read_gyr_data()
-            time.sleep(0.2)
-            gyr_meas2 = imu.read_gyr_data()
-
-            value = abs(gyr_meas[1] - gyr_meas2[1])
-  #             rotaryDeal()
-            if  (value <= 2):
-                rgb.set_color(GREEN)
-            elif(value <= 12):
-                rgb.set_color(YELLOW)
-    	    elif(value > 12):
-                rgb.set_color(RED)
-    return
 
 ############################################################
 
@@ -790,39 +773,13 @@ with picamera.PiCamera() as camera:
     try:
         # show gui fot 10 seconds:
         patternswitch(gui,1)
-#	imuCode()
         time.sleep(10)
         guivisible = 1
         # cycle through possible patterns:
         patternswitch(ovl,0)
 #	Process(target=imuCode).start()
         while True:
-		#gyr_meas = imu.read_gyr_data()
-		
-
-
-		#Process(target=rotaryDeal).start()
 		rotaryDeal()
-
-                #time.sleep(0.01)
-		#call(["export DISPLAY:0"])
-                #call(["scrot"])
-#		os.system('scrot')
-#        	gyr_meas = imu.read_gyr_data()
-#       		time.sleep(0.2)
-#        	gyr_meas2 = imu.read_gyr_data()
-
-#	    	value = abs(gyr_meas[1] - gyr_meas2[1])
-
-  #		rotaryDeal()
-#	      	if  (value <= 2):
- #           	    rgb.set_color(GREEN)
-  #  	        elif(value <= 12):
-   #         	    rgb.set_color(YELLOW)
-    #    	elif(value > 12):
-     #               rgb.set_color(RED)     
-
-
     finally:
         camera.close()               # clean up camera
         GPIO.cleanup()               # clean up GPIO
