@@ -20,6 +20,10 @@ import ConfigParser
 import smbus
 from BerryImu import BerryImu
 from squid import *
+import os
+
+
+
 
 zooms = {
 
@@ -70,6 +74,20 @@ def get_file_name():  # new
 gunRange = 30
 alphaValue = 64
 
+
+RoAPin = 17    # pin17
+RoBPin = 18    # pin18
+RoSPin = 13    # pin13
+
+globalCounter = 0
+
+flag = 0
+Last_RoB_Status = 0
+Current_RoB_Status = 0
+
+
+
+
 # subclass for ConfigParser to add comments for settings
 # (adapted from jcollado's solution on stackoverflow)
 class ConfigParserWithComments(ConfigParser.ConfigParser):
@@ -103,6 +121,33 @@ cdefaults = {
             'stream': 'false',
             'upload': 'false'
             }
+
+
+def rotaryDeal():
+	global flag
+	global Last_RoB_Status
+	global Current_RoB_Status
+	global globalCounter
+	Last_RoB_Status = GPIO.input(RoBPin)
+	while(not GPIO.input(RoAPin)):
+		Current_RoB_Status = GPIO.input(RoBPin)
+		flag = 1
+	if flag == 1:
+		flag = 0
+		if (Last_RoB_Status == 0) and (Current_RoB_Status == 1):
+			globalCounter = globalCounter + 1
+			print 'globalCounter = %d' % globalCounter
+		if (Last_RoB_Status == 1) and (Current_RoB_Status == 0):
+			globalCounter = globalCounter - 1
+			print 'globalCounter = %d' % globalCounter
+
+def clear(ev=None):
+        globalCounter = 0
+	print 'globalCounter = %d' % globalCounter
+	time.sleep(1)
+
+def rotaryClear():
+        GPIO.add_event_detect(RoSPin, GPIO.FALLING, callback=clear) # wait for falling
 
 # if config file is missing, recreate it with default values:
 def CreateConfigFromDef(fileloc,defaults):
@@ -179,8 +224,6 @@ colors = {
 togsw = 1
 guivisible = 1
 
-clk = 17
-dt = 18
 
 counter = 0
 
@@ -192,10 +235,9 @@ GPIO.setup(24, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(12, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-GPIO.setup(clk, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-GPIO.setup(dt, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-
-clkLastState = GPIO.input(clk)
+GPIO.setup(RoAPin, GPIO.IN)    # input mode
+GPIO.setup(RoBPin, GPIO.IN)
+GPIO.setup(RoSPin,GPIO.IN,pull_up_down=GPIO.PUD_UP)
 
 bus = smbus.SMBus(1)
 imu = BerryImu(bus)
@@ -280,9 +322,11 @@ def togglepattern2(channel):
 # function 
 def togglepatternZoomIn():
     global togsw,o,curpat,col,ovl,gui,alphaValue
+    zoom_in()
     # if overlay is inactive, ignore button:
     if togsw == 0:
         print "Pattern button pressed, but ignored --- Crosshair not visible."
+	zoom_in()
     # if overlay is active, drop it, change pattern, then show it again
     else:
         curpat += 1
@@ -292,20 +336,24 @@ def togglepatternZoomIn():
         if guivisible == 0:
             # reinitialize array:
             ovl = np.zeros((height, width, 3), dtype=np.uint8)
-            zoom_in()
+            #zoom_in()
             patternswitcher(ovl,0)
-            if 'o' in globals():
+            #zoom_in()
+	    if 'o' in globals():
                 camera.remove_overlay(o)
             o = camera.add_overlay(np.getbuffer(ovl), layer=3, alpha=alphaValue)
-        else:
+            zoom_in()
+	else:
             # reinitialize array
             gui = np.zeros((height, width, 3), dtype=np.uint8)
-            creategui(gui)
-            zoom_in()
+            #zoom_in()
+	    creategui(gui)
+            #zoom_in()
             patternswitcher(gui,1)
             if 'o' in globals():
                 camera.remove_overlay(o)
             o = camera.add_overlay(np.getbuffer(gui), layer=3, alpha=alphaValue)
+	    zoom_in()
     return
 
 # function to call when middle button is pressed (GPIO 23):
@@ -313,7 +361,8 @@ def togglepatternZoomOut():
     global togsw,o,curpat,col,ovl,gui,alphaValue
     # if overlay is inactive, ignore button:
     if togsw == 0:
-        print "Pattern button pressed, but ignored --- Crosshair not visible."
+        zoom_out()
+	print "Pattern button pressed, but ignored --- Crosshair not visible."
     # if overlay is active, drop it, change pattern, then show it again
     else:
         curpat += 1
@@ -725,21 +774,18 @@ with picamera.PiCamera() as camera:
         # cycle through possible patterns:
         patternswitch(ovl,0)
         while True:
-		clkState = GPIO.input(clk)
-                dtState = GPIO.input(dt)
-                if clkState != clkLastState:
-                        if dtState != clkState:
-                                counter += 1
-				togglepatternZoomIn()
-                        else:
-                                counter -= 1
-				togglepatternZoomOut()
-                        print counter
-                clkLastState = clkState
-                time.sleep(0.01)
-                
+		#gyr_meas = imu.read_gyr_data()
+		
+
+
+
+
+                #time.sleep(0.01)
+		#call(["export DISPLAY:0"])
+                #call(["scrot"])
+#		os.system('scrot')
         	gyr_meas = imu.read_gyr_data()
-       		time.sleep(0.25)
+       		time.sleep(0.1)
         	gyr_meas2 = imu.read_gyr_data()
 
         	value = abs(gyr_meas[1] - gyr_meas2[1])
