@@ -7,8 +7,10 @@ imu = BerryImu(bus)
 imu.initialise()
 rgb = Squid(16, 20, 21)
 
-while True:
-	gyr_meas = imu.read_gyr_data()
+try:
+    while True:
+
+    	gyr_meas = imu.read_gyr_data()
        	time.sleep(0.15)
         gyr_meas2 = imu.read_gyr_data()
 
@@ -20,4 +22,10 @@ while True:
             rgb.set_color(YELLOW)
         elif(value > 8):
             rgb.set_color(RED)     
+	
+except IOError as e:
+    print "I/O error({0}): {1}".format(e.errno, e.strerror)
+
+finally:
+    GPIO.cleanup()               # clean up GPIO
 
