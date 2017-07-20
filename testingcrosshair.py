@@ -24,9 +24,11 @@ import os
 from multiprocessing import Process
 from button import *
 
-b = Button(7)
-counter = 0
+b = Button(4)
+buttoncounter = 0
 
+global zoomcount
+zoomcount=0
 
 zooms = {
 
@@ -56,19 +58,23 @@ def set_max_zoom():
     zooms['zoom_wh'] = zooms['zoom_wh_max']
 
 def zoom_out():
+    global zoomcount
     if zooms['zoom_xy'] - zooms['zoom_step'] < zooms['zoom_xy_min']:
         set_min_zoom()
     else:
         zooms['zoom_xy'] -= zooms['zoom_step']
         zooms['zoom_wh'] += (zooms['zoom_step'] * 2)
+	zoomcount = zoomcount -1
     update_zoom()
 
 def zoom_in():
+    global zoomcount
     if zooms['zoom_xy'] + zooms['zoom_step'] > zooms['zoom_xy_max']:
         set_max_zoom()
     else:
         zooms['zoom_xy'] += zooms['zoom_step']
         zooms['zoom_wh'] -= (zooms['zoom_step'] * 2)
+	zoomcount = zoomcount +1
     update_zoom()
 
 def get_file_name():  # new
@@ -154,6 +160,7 @@ def clear(ev=None):
 	time.sleep(1)
 
 def rotaryClear():
+	print("Cleared")
         GPIO.add_event_detect(RoSPin, GPIO.FALLING, callback=clear) # wait for falling
 
 # if config file is missing, recreate it with default values:
@@ -329,38 +336,41 @@ def togglepattern2(channel):
 # function 
 def togglepatternZoomIn():
     global togsw,o,curpat,col,ovl,gui,alphaValue
-    zoom_in()
+    #zoom_in()
     # if overlay is inactive, ignore button:
     if togsw == 0:
         print "Pattern button pressed, but ignored --- Crosshair not visible."
 	zoom_in()
     # if overlay is active, drop it, change pattern, then show it again
     else:
-        curpat += 1
-        print "Set new pattern: " + str(curpat) 
-        if curpat > patterns.maxpat:     # this number must be adjusted to number of available patterns!
-            curpat = 1
+        #curpat += 1
+        #print "Set new pattern: " + str(curpat) 
+        #if curpat > patterns.maxpat:     # this number must be adjusted to number of available patterns!
+        #    curpat = 1
         if guivisible == 0:
-            # reinitialize array:
+            zoom_in()
+	    # reinitialize array:
             ovl = np.zeros((height, width, 3), dtype=np.uint8)
             #zoom_in()
-            patternswitcher(ovl,0)
+	    
+            patternswitcherZoomIn(ovl,0)
             #zoom_in()
 	    if 'o' in globals():
                 camera.remove_overlay(o)
             o = camera.add_overlay(np.getbuffer(ovl), layer=3, alpha=alphaValue)
-            zoom_in()
+            #zoom_in()
 	else:
             # reinitialize array
-            gui = np.zeros((height, width, 3), dtype=np.uint8)
+            zoom_in()
+	    gui = np.zeros((height, width, 3), dtype=np.uint8)
             #zoom_in()
 	    creategui(gui)
             #zoom_in()
-            patternswitcher(gui,1)
+            patternswitcherZoomIn(gui,1)
             if 'o' in globals():
                 camera.remove_overlay(o)
             o = camera.add_overlay(np.getbuffer(gui), layer=3, alpha=alphaValue)
-	    zoom_in()
+	    #zoom_in()
     return
 
 # function to call when middle button is pressed (GPIO 23):
@@ -380,7 +390,7 @@ def togglepatternZoomOut():
             # reinitialize array:
             ovl = np.zeros((height, width, 3), dtype=np.uint8)
             zoom_out()
-            patternswitcher(ovl,0)
+            patternswitcherZoomOut(ovl,0)
             if 'o' in globals():
                 camera.remove_overlay(o)
             o = camera.add_overlay(np.getbuffer(ovl), layer=3, alpha=alphaValue)
@@ -389,11 +399,93 @@ def togglepatternZoomOut():
             gui = np.zeros((height, width, 3), dtype=np.uint8)
             creategui(gui)
             zoom_out()
-            patternswitcher(gui,1)
+            patternswitcherZoomOut(gui,1)
             if 'o' in globals():
                 camera.remove_overlay(o)
             o = camera.add_overlay(np.getbuffer(gui), layer=3, alpha=alphaValue)
     return
+
+
+def patternswitcherZoomIn(target,guitoggle):
+    global o, zoomcount, ycenter
+    # first remove existing overlay:
+    if 'o' in globals():
+        camera.remove_overlay(o)
+    if guitoggle == 1:
+        creategui(gui)
+    if zooms['zoom_xy'] == zooms['zoom_xy_max']:
+	print("zoom at max")
+    else:
+        ycenter = ycenter + 10
+    # cycle through possible patterns:
+    if curpat2 == 1:
+        patterns.pattern1(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 2:
+        patterns.pattern2(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 3:
+        patterns.pattern3(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 4:
+        patterns.pattern4(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 5:
+        patterns.pattern5(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 6:
+        patterns.pattern6(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 7:
+        patterns.pattern7(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 8:
+        patterns.pattern8(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 9:
+        patterns.pattern9(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 10:
+        patterns.pattern10(target, width, height, xcenter, ycenter, radius, col)
+    if guitoggle == 1:
+        creategui(gui)
+    # Add the overlay directly into layer 3 with transparency;
+    # we can omit the size parameter of add_overlay as the
+    # size is the same as the camera's resolution
+    o = camera.add_overlay(np.getbuffer(target), layer=3, alpha=160)
+    return
+
+def patternswitcherZoomOut(target,guitoggle):
+    global o, zoomcount, ycenter
+    # first remove existing overlay:
+    if 'o' in globals():
+        camera.remove_overlay(o)
+    if guitoggle == 1:
+        creategui(gui)
+    if zooms['zoom_xy'] == zooms['zoom_xy_min']:
+        print("zoom at min")
+    else:
+        ycenter = ycenter - 10
+    # cycle through possible patterns:
+    if curpat2 == 1:
+        patterns.pattern1(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 2:
+        patterns.pattern2(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 3:
+        patterns.pattern3(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 4:
+        patterns.pattern4(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 5:
+        patterns.pattern5(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 6:
+        patterns.pattern6(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 7:
+        patterns.pattern7(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 8:
+        patterns.pattern8(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 9:
+        patterns.pattern9(target, width, height, xcenter, ycenter, radius, col)
+    if curpat2 == 10:
+        patterns.pattern10(target, width, height, xcenter, ycenter, radius, col)
+    if guitoggle == 1:
+        creategui(gui)
+    # Add the overlay directly into layer 3 with transparency;
+    # we can omit the size parameter of add_overlay as the
+    # size is the same as the camera's resolution
+    o = camera.add_overlay(np.getbuffer(target), layer=3, alpha=160)
+    return
+
 
 # function to call when low button is pressed (GPIO 18):
 def togglecolor(channel):
@@ -784,12 +876,20 @@ with picamera.PiCamera() as camera:
         while True:
 		rotaryDeal()
 		if b.is_pressed():
-		    if counter == 1:
-			set_max_zoom()
-			counter=0:
+		    print("pressed")
+		    if buttoncounter == 0:
+			for x in range(14-zoomcount):
+			    togglepatternZoomIn()
+			    time.sleep(.15)
+			#set_max_zoom()
+			buttoncounter=1
 		    else:
-			set_min_zoom()
-			counter=0
+                        for x in range(zoomcount+1):
+                            togglepatternZoomOut()
+			    zoomcount = 0
+			    time.sleep(.15)
+			#set_min_zoom()
+			buttoncounter=0
     finally:
         camera.close()               # clean up camera
         GPIO.cleanup()               # clean up GPIO
