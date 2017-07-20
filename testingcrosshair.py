@@ -789,6 +789,7 @@ with picamera.PiCamera() as camera:
 			counter=0:
 		    else:
 			set_min_zoom()
+			counter=0
     finally:
         camera.close()               # clean up camera
         GPIO.cleanup()               # clean up GPIO
