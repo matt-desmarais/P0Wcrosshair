@@ -22,7 +22,10 @@ from BerryImu import BerryImu
 from squid import *
 import os
 from multiprocessing import Process
+from button import *
 
+b = Button(7)
+counter = 0
 
 
 zooms = {
@@ -780,6 +783,12 @@ with picamera.PiCamera() as camera:
 #	Process(target=imuCode).start()
         while True:
 		rotaryDeal()
+		if b.is_pressed():
+		    if counter == 1:
+			set_max_zoom()
+			counter=0:
+		    else:
+			set_min_zoom()
     finally:
         camera.close()               # clean up camera
         GPIO.cleanup()               # clean up GPIO
