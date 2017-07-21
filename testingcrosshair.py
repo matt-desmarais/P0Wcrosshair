@@ -8,7 +8,6 @@ cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(insp
 if cmd_subfolder not in sys.path:
     sys.path.insert(0, cmd_subfolder)
 
-
 import datetime
 import time
 import picamera
@@ -26,6 +25,11 @@ from button import *
 
 b = Button(4)
 buttoncounter = 0
+
+b1 = Button(23)
+b2 = Button(24)
+b3 = Button(12)
+
 
 global zoomcount
 zoomcount=0
@@ -145,12 +149,10 @@ def rotaryDeal():
 		flag = 0
 		if (Last_RoB_Status == 0) and (Current_RoB_Status == 1):
 			globalCounter = globalCounter + 1
-			#zoom_in()
 			togglepatternZoomIn()
 			print 'globalCounter = %d' % globalCounter
 		if (Last_RoB_Status == 1) and (Current_RoB_Status == 0):
 			globalCounter = globalCounter - 1
-			#zoom_out()
 			togglepatternZoomOut()
 			print 'globalCounter = %d' % globalCounter
 
@@ -219,12 +221,13 @@ if (width%32) > 0 or (height%16) > 0:
     height = height-(height%16)
     print "New resolution: " + str(width) + "x" + str(height)
 curcol = config.get('overlay', 'color')
-curpat = int(config.get('overlay', 'pattern'))
+curpat2 = int(config.get('overlay', 'pattern'))
+curpat = 1
 xcenter = int(config.get('overlay', 'xcenter'))
 ycenter = int(config.get('overlay', 'ycenter'))
 radius = int(config.get('overlay', 'radius'))
 
-curpat2 = 1
+#curpat2 = 1
 # map colors:
 colors = {
         'white': (255,255,255),
@@ -252,11 +255,6 @@ GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(RoAPin, GPIO.IN)    # input mode
 GPIO.setup(RoBPin, GPIO.IN)
 GPIO.setup(RoSPin,GPIO.IN,pull_up_down=GPIO.PUD_UP)
-
-#bus = smbus.SMBus(1)
-#imu = BerryImu(bus)
-#imu.initialise()
-#rgb = Squid(16, 20, 21)
 
 # threaded callbacks to run in new thread when button events are detected
 # function to call when top button is pressed (GPIO 24):
@@ -335,42 +333,31 @@ def togglepattern2(channel):
 
 # function 
 def togglepatternZoomIn():
-    global togsw,o,curpat,col,ovl,gui,alphaValue
-    #zoom_in()
+    global togsw,o,curpat,col,ovl,gui,alphaValue,ycenter
     # if overlay is inactive, ignore button:
     if togsw == 0:
         print "Pattern button pressed, but ignored --- Crosshair not visible."
 	zoom_in()
+	ycenter = ycenter+10
     # if overlay is active, drop it, change pattern, then show it again
     else:
-        #curpat += 1
-        #print "Set new pattern: " + str(curpat) 
-        #if curpat > patterns.maxpat:     # this number must be adjusted to number of available patterns!
-        #    curpat = 1
         if guivisible == 0:
             zoom_in()
 	    # reinitialize array:
             ovl = np.zeros((height, width, 3), dtype=np.uint8)
-            #zoom_in()
-	    
             patternswitcherZoomIn(ovl,0)
-            #zoom_in()
 	    if 'o' in globals():
                 camera.remove_overlay(o)
             o = camera.add_overlay(np.getbuffer(ovl), layer=3, alpha=alphaValue)
-            #zoom_in()
 	else:
             # reinitialize array
             zoom_in()
 	    gui = np.zeros((height, width, 3), dtype=np.uint8)
-            #zoom_in()
 	    creategui(gui)
-            #zoom_in()
             patternswitcherZoomIn(gui,1)
             if 'o' in globals():
                 camera.remove_overlay(o)
             o = camera.add_overlay(np.getbuffer(gui), layer=3, alpha=alphaValue)
-	    #zoom_in()
     return
 
 # function to call when middle button is pressed (GPIO 23):
@@ -382,23 +369,19 @@ def togglepatternZoomOut():
 	print "Pattern button pressed, but ignored --- Crosshair not visible."
     # if overlay is active, drop it, change pattern, then show it again
     else:
-        curpat += 1
-        print "Set new pattern: " + str(curpat) 
-        if curpat > patterns.maxpat:     # this number must be adjusted to number of available patterns!
-            curpat = 1
         if guivisible == 0:
+	    zoom_out()
             # reinitialize array:
             ovl = np.zeros((height, width, 3), dtype=np.uint8)
-            zoom_out()
             patternswitcherZoomOut(ovl,0)
             if 'o' in globals():
                 camera.remove_overlay(o)
             o = camera.add_overlay(np.getbuffer(ovl), layer=3, alpha=alphaValue)
         else:
+	    zoom_out()
             # reinitialize array
             gui = np.zeros((height, width, 3), dtype=np.uint8)
             creategui(gui)
-            zoom_out()
             patternswitcherZoomOut(gui,1)
             if 'o' in globals():
                 camera.remove_overlay(o)
@@ -443,7 +426,8 @@ def patternswitcherZoomIn(target,guitoggle):
     # Add the overlay directly into layer 3 with transparency;
     # we can omit the size parameter of add_overlay as the
     # size is the same as the camera's resolution
-    o = camera.add_overlay(np.getbuffer(target), layer=3, alpha=160)
+    o = camera.add_overlay(np.getbuffer(target), layer=3, alpha=alphaValue)
+    #cv2.imwrite('/home/pi/messigray.png', np.getbuffer(gui))
     return
 
 def patternswitcherZoomOut(target,guitoggle):
@@ -483,7 +467,7 @@ def patternswitcherZoomOut(target,guitoggle):
     # Add the overlay directly into layer 3 with transparency;
     # we can omit the size parameter of add_overlay as the
     # size is the same as the camera's resolution
-    o = camera.add_overlay(np.getbuffer(target), layer=3, alpha=160)
+    o = camera.add_overlay(np.getbuffer(target), layer=3, alpha=alphaValue)
     return
 
 
@@ -503,7 +487,7 @@ def togglecolor(channel):
         if guivisible == 0:
             # reinitialize array:
             ovl = np.zeros((height, width, 3), dtype=np.uint8)
-            patternswitch(ovl,0)
+            patternswitcher(ovl,0)
             if 'o' in globals():
                 camera.remove_overlay(o)
             o = camera.add_overlay(np.getbuffer(ovl), layer=3, alpha=alphaValue)
@@ -511,7 +495,7 @@ def togglecolor(channel):
             # reinitialize array
             gui = np.zeros((height, width, 3), dtype=np.uint8)
             creategui(gui)
-            patternswitch(gui,1)
+            patternswitcher(gui,1)
             if 'o' in globals():
                 camera.remove_overlay(o)
             o = camera.add_overlay(np.getbuffer(gui), layer=3, alpha=alphaValue)
@@ -519,8 +503,8 @@ def togglecolor(channel):
 
 GPIO.setmode(GPIO.BCM)
 GPIO.add_event_detect(24, GPIO.FALLING, callback=toggleonoff, bouncetime=300)
-GPIO.add_event_detect(12, GPIO.FALLING, callback=togglepattern, bouncetime=300)
-GPIO.add_event_detect(23, GPIO.FALLING, callback=togglepattern2, bouncetime=300)
+GPIO.add_event_detect(12, GPIO.FALLING, callback=togglepattern2, bouncetime=300)
+GPIO.add_event_detect(23, GPIO.FALLING, callback=togglecolor, bouncetime=300)
 
 # map text color names to RGB:
 def colormap(col):
@@ -541,10 +525,10 @@ def colorcycle(self, value, default='white'):
 
 # function to construct/draw the GUI
 def creategui(target):
-    cv2.putText(target, gui1, (10,height-138), font, 2, col, 2)
-    cv2.putText(target, gui2, (10,height-108), font, 2, col, 2)
-    cv2.putText(target, gui3, (10,height-78), font, 2, col, 2)
-    cv2.putText(target, 'range: '+str(gunRange)+'ft', (10,height-48), font, 2, col, 2)
+    cv2.putText(target, gui1, (10,height-48), font, 2, col, 2)
+    cv2.putText(target, gui2, (10,height-18), font, 2, col, 2)
+    #cv2.putText(target, gui3, (10,height-78), font, 2, col, 2)
+    #cv2.putText(target, 'range: '+str(gunRange)+'ft', (10,height-48), font, 2, col, 2)
     #cv2.putText(target, gui5, (10,height-18), font, 2, col, 2)
     #cv2.putText(target, 'GUI will vanish after 10s', (10,30), font, 2, col, 2)
     return
@@ -831,7 +815,7 @@ def patternswitcher(target,guitoggle):
     # Add the overlay directly into layer 3 with transparency;
     # we can omit the size parameter of add_overlay as the
     # size is the same as the camera's resolution
-    o = camera.add_overlay(np.getbuffer(target), layer=3, alpha=160)
+    o = camera.add_overlay(np.getbuffer(target), layer=3, alpha=alphaValue)
     return
 
 
@@ -844,7 +828,7 @@ col = colormap(curcol)
 # create array for a bare metal gui and text:
 gui = np.zeros((height, width, 3), dtype=np.uint8)
 gui1 = 'Airsoft Landwarrior'
-gui2 = 'Version 0.1 alpha'
+gui2 = 'Version 0.25 alpha'
 gui3 = 'button  = cycle distance'
 gui4 = 'range: '+str(gunRange)
 gui5 = 's/r     = save/revert settings'
@@ -853,18 +837,12 @@ with picamera.PiCamera() as camera:
     camera.resolution = (width, height)
     camera.framerate = 24
     filename = get_file_name()
-#    camera.exposure = 'off'
-    camera.iso = 800
-#    camera.awb = 'off'
+#    camera.iso = 800
     camera.meter_mode='matrix'
-#    camera.brightness = 70
-#    camera.contrast = 50
 #    camera.start_recording(filename)
     # set this to 1 when switching to fullscreen output
     camera.preview_fullscreen = 1
-    #camera.preview_window = (0,0,width,height)
     camera.start_preview()
-    #camera.annotate_background = 'black'
     try:
         # show gui fot 10 seconds:
         patternswitch(gui,1)
@@ -872,7 +850,6 @@ with picamera.PiCamera() as camera:
         guivisible = 1
         # cycle through possible patterns:
         patternswitch(ovl,0)
-#	Process(target=imuCode).start()
         while True:
 		rotaryDeal()
 		if b.is_pressed():
@@ -880,15 +857,13 @@ with picamera.PiCamera() as camera:
 		    if buttoncounter == 0:
 			for x in range(14-zoomcount):
 			    togglepatternZoomIn()
-			    time.sleep(.15)
-			#set_max_zoom()
+			    time.sleep(.1)
 			buttoncounter=1
 		    else:
                         for x in range(zoomcount+1):
                             togglepatternZoomOut()
 			    zoomcount = 0
-			    time.sleep(.15)
-			#set_min_zoom()
+			    time.sleep(.1)
 			buttoncounter=0
     finally:
         camera.close()               # clean up camera
