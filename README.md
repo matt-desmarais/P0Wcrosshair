@@ -9,3 +9,6 @@ Pi Zero W crosshair system
 
 
 ![prototype](https://github.com/matt-desmarais/P0Wcrosshair/blob/master/complete.jpg)
+
+
+![display](https://github.com/matt-desmarais/P0Wcrosshair/blob/master/crosshairdisplay.jpg)
