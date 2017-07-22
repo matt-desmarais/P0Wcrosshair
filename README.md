@@ -1,4 +1,6 @@
 # P0Wcrosshair
+
+[Background Info](http://hackaday.com/2017/07/10/building-a-smart-airsoft-gun-with-open-source-hardware/)
 Pi Zero W crosshair system
 This shit is not done yet...
 
