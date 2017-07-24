@@ -5,7 +5,7 @@
 
 Pi Zero W crosshair system
 
-![wiring](https://github.com/matt-desmarais/P0Wcrosshair/raw/master/wiring.png)
+![wiring](https://github.com/matt-desmarais/P0Wcrosshair/raw/master/wiringDiagram.png)
 
 
 ![prototype](https://github.com/matt-desmarais/P0Wcrosshair/blob/master/complete.jpg)
