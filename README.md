@@ -12,3 +12,10 @@ Pi Zero W crosshair system
 
 
 ![display](https://github.com/matt-desmarais/P0Wcrosshair/blob/master/crosshairdisplay.jpg)
+
+
+install instructions:
+1. sudo raspi-config enable camera and i2c under interfacing options
+2. git clone https://github.com/matt-desmarais/P0Wcrosshair.git
+3. sudo apt-get install python-opencv
+4. run ./RunBoth.sh
