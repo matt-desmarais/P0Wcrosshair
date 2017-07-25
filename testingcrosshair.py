@@ -20,8 +20,10 @@ import smbus
 from BerryImu import BerryImu
 from squid import *
 import os
+import math
 from multiprocessing import Process
 from button import *
+
 
 b = Button(4)
 buttoncounter = 0
@@ -65,6 +67,7 @@ def zoom_out():
     global zoomcount
     if zooms['zoom_xy'] - zooms['zoom_step'] < zooms['zoom_xy_min']:
         set_min_zoom()
+	zoomcount=0
     else:
         zooms['zoom_xy'] -= zooms['zoom_step']
         zooms['zoom_wh'] += (zooms['zoom_step'] * 2)
@@ -333,12 +336,12 @@ def togglepattern2(channel):
 
 # function 
 def togglepatternZoomIn():
-    global togsw,o,curpat,col,ovl,gui,alphaValue,ycenter
+    global togsw,o,curpat,col,ovl,gui,alphaValue,ycenter,zoomcount
     # if overlay is inactive, ignore button:
     if togsw == 0:
         print "Pattern button pressed, but ignored --- Crosshair not visible."
 	zoom_in()
-	ycenter = ycenter+10
+	ycenter = ycenter + zoomcount
     # if overlay is active, drop it, change pattern, then show it again
     else:
         if guivisible == 0:
@@ -366,6 +369,9 @@ def togglepatternZoomOut():
     # if overlay is inactive, ignore button:
     if togsw == 0:
         zoom_out()
+	ycenter = int(ycenter - int(math.fabs(zoomcount - 14))/2)
+	if zoomcount == 0:
+            ycenter = cdefaults.get('ycenter')
 	print "Pattern button pressed, but ignored --- Crosshair not visible."
     # if overlay is active, drop it, change pattern, then show it again
     else:
@@ -399,7 +405,7 @@ def patternswitcherZoomIn(target,guitoggle):
     if zooms['zoom_xy'] == zooms['zoom_xy_max']:
 	print("zoom at max")
     else:
-        ycenter = ycenter + 10
+        ycenter = ycenter + zoomcount
     # cycle through possible patterns:
     if curpat2 == 1:
         patterns.pattern1(target, width, height, xcenter, ycenter, radius, col)
@@ -440,7 +446,9 @@ def patternswitcherZoomOut(target,guitoggle):
     if zooms['zoom_xy'] == zooms['zoom_xy_min']:
         print("zoom at min")
     else:
-        ycenter = ycenter - 10
+        ycenter = int(ycenter - int(math.fabs(zoomcount - 14))/2)
+	if zoomcount == 0:
+	    ycenter = cdefaults.get('ycenter')
     # cycle through possible patterns:
     if curpat2 == 1:
         patterns.pattern1(target, width, height, xcenter, ycenter, radius, col)
