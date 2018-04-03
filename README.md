@@ -8,10 +8,10 @@ Pi Zero W crosshair system
 ![wiring](https://github.com/matt-desmarais/P0Wcrosshair/raw/master/wiringDiagram.png)
 
 
-![prototype](https://github.com/matt-desmarais/P0Wcrosshair/blob/master/complete.jpg)
+![prototype](https://github.com/matt-desmarais/P0Wcrosshair/blob/master/complete.jpeg)
 
 
-![display](https://github.com/matt-desmarais/P0Wcrosshair/blob/master/crosshairdisplay.jpg)
+![display](https://github.com/matt-desmarais/P0Wcrosshair/blob/master/crosshair.png)
 
 
 install instructions:
